@@ -1,27 +1,51 @@
 import React from 'react';
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import {BrowserRouter as Router, Link, Route, Routes} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const HomePage = () => <div className="container mt-5"><h1>Список переговорных комнат</h1></div>;
-const LoginPage = () => <div className="container mt-5"><h1>Вход в систему</h1></div>;
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
+    const isAuthenticated = !!localStorage.getItem('access_token');
+
+    const handleLogout = () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+    };
+
     return (
         <Router>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
                 <div className="container">
-                    <a className="navbar-brand" href="/">MeetSpace</a>
-                    <div className="navbar-nav">
-                        <a className="nav-link" href="/">Главная</a>
-                        <a className="nav-link" href="/login">Войти</a>
+                    <Link className="navbar-brand" to="/">MeetSpace</Link>
+                    <div className="navbar-nav ms-auto">
+                        <Link className="nav-link" to="/">Главная</Link>
+                        {!isAuthenticated ? (
+                            <>
+                                <Link className="nav-link" to="/login">Войти</Link>
+                                <Link className="nav-link" to="/register">Регистрация</Link>
+                            </>
+                        ) : (
+                            <button
+                                className="btn btn-link nav-link"
+                                onClick={handleLogout}
+                            >
+                                Выйти
+                            </button>
+                        )}
                     </div>
                 </div>
             </nav>
 
-            <Routes>
-                <Route path="/" element={<HomePage/>}/>
-                <Route path="/login" element={<LoginPage/>}/>
-            </Routes>
+            <div className="container">
+                <Routes>
+                    <Route path="/" element={<HomePage/>}/>
+                    <Route path="/login" element={<LoginPage/>}/>
+                    <Route path="/register" element={<RegisterPage/>}/>
+                </Routes>
+            </div>
         </Router>
     );
 }
