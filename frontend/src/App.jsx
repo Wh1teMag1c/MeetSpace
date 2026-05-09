@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import MyBookingsPage from './pages/MyBookingsPage';
 
 function App() {
     const isAuthenticated = !!localStorage.getItem('access_token');
@@ -22,6 +23,9 @@ function App() {
                     <Link className="navbar-brand" to="/">MeetSpace</Link>
                     <div className="navbar-nav ms-auto">
                         <Link className="nav-link" to="/">Главная</Link>
+                        {isAuthenticated && (
+                            <Link className="nav-link" to="/my-bookings">Мои бронирования</Link>
+                        )}
                         {!isAuthenticated ? (
                             <>
                                 <Link className="nav-link" to="/login">Войти</Link>
@@ -44,6 +48,7 @@ function App() {
                     <Route path="/" element={<HomePage/>}/>
                     <Route path="/login" element={<LoginPage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
+                    <Route path="/my-bookings" element={<MyBookingsPage/>}/>
                 </Routes>
             </div>
         </Router>
