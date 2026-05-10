@@ -5,9 +5,11 @@ import api from '../api';
 import {
     ArrowRight,
     CalendarCheck,
+    CheckAll,
     CheckCircleFill,
     Clock,
     ExclamationCircleFill,
+    ExclamationTriangleFill,
     GeoAlt,
     HourglassSplit,
     JournalText,
@@ -51,8 +53,9 @@ const MyBookingsPage = () => {
     const confirmCancel = async () => {
         const id = cancelModal.bookingId;
         try {
-            await api.delete(`reservations/${id}/`);
-            setBookings(bookings.filter(b => b.id !== id));
+            await api.patch(`reservations/${id}/`, {status: 'canceled'});
+
+            setBookings(bookings.map(b => b.id === id ? {...b, status: 'canceled'} : b));
             closeCancelModal();
         } catch (err) {
             alert('Не удалось отменить бронирование');
@@ -60,9 +63,13 @@ const MyBookingsPage = () => {
         }
     };
 
-    const filteredBookings = bookings.filter(b => {
+    const isBookingActive = (b) => {
         const isPast = new Date(b.end_at) < new Date();
-        return filter === 'active' ? !isPast : isPast;
+        return !isPast && b.status !== 'canceled';
+    };
+
+    const filteredBookings = bookings.filter(b => {
+        return filter === 'active' ? isBookingActive(b) : !isBookingActive(b);
     });
 
     const formatDate = (dateStr) => {
@@ -92,13 +99,13 @@ const MyBookingsPage = () => {
                         className={`tab-btn ${filter === 'active' ? 'active' : 'inactive'}`}
                         onClick={() => setFilter('active')}
                     >
-                        Активные ({bookings.filter(b => new Date(b.end_at) >= new Date()).length})
+                        Активные ({bookings.filter(isBookingActive).length})
                     </button>
                     <button
                         className={`tab-btn ${filter === 'archive' ? 'active' : 'inactive'}`}
                         onClick={() => setFilter('archive')}
                     >
-                        Архив
+                        Архив ({bookings.filter(b => !isBookingActive(b)).length})
                     </button>
                 </div>
 
@@ -127,75 +134,95 @@ const MyBookingsPage = () => {
                     </div>
                 ) : (
                     <div className="d-flex flex-column gap-4">
-                        {filteredBookings.map(booking => (
-                            <div key={booking.id}
-                                 className="booking-card shadow-sm p-4 overflow-hidden position-relative">
-                                <div className="row g-4 align-items-center">
-                                    <div className="col-lg-2 d-none d-lg-block">
-                                        <img
-                                            src={booking.room_details?.preview || 'https://via.placeholder.com/150'}
-                                            alt={booking.room_details?.title}
-                                            className="img-fluid rounded-4 shadow-sm"
-                                            style={{height: '120px', width: '100%', objectFit: 'cover'}}
-                                        />
-                                    </div>
+                        {filteredBookings.map(booking => {
+                            const isPast = new Date(booking.end_at) < new Date();
+                            const isArchived = !isBookingActive(booking);
 
-                                    <div className="col-lg-7">
-                                        <div className="d-flex align-items-center gap-3 mb-2">
-                                            <h3 className="fw-800 mb-0">{booking.room_details?.title}</h3>
+                            return (
+                                <div key={booking.id}
+                                     className={`booking-card shadow-sm p-4 overflow-hidden position-relative ${isArchived ? 'opacity-75' : ''}`}>
+                                    <div className="row g-4 align-items-center">
+                                        <div className="col-lg-2 d-none d-lg-block">
+                                            <img
+                                                src={booking.room_details?.preview || 'https://via.placeholder.com/150'}
+                                                alt={booking.room_details?.title}
+                                                className="img-fluid rounded-4 shadow-sm"
+                                                style={{height: '120px', width: '100%', objectFit: 'cover'}}
+                                            />
+                                        </div>
 
-                                            {booking.status === 'new' ? (
-                                                <span
-                                                    className="status-badge bg-warning bg-opacity-10 text-warning d-flex align-items-center gap-2">
-                                                    <HourglassSplit size={14}/> Ожидает
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    className="status-badge bg-success bg-opacity-10 text-success d-flex align-items-center gap-2">
-                                                    <CheckCircleFill size={14}/> Подтверждено
-                                                </span>
+                                        <div className="col-lg-7">
+                                            <div className="d-flex align-items-center gap-3 mb-2">
+                                                <h3 className={`fw-800 mb-0 ${isArchived ? 'text-muted' : 'text-dark'}`}>
+                                                    {booking.room_details?.title}
+                                                </h3>
+
+                                                {booking.status === 'canceled' ? (
+                                                    <span
+                                                        className="status-badge bg-danger bg-opacity-10 text-danger d-flex align-items-center gap-2">
+                                                        <ExclamationTriangleFill size={14}/> Отменено
+                                                    </span>
+                                                ) : isPast ? (
+                                                    <span
+                                                        className="status-badge bg-secondary bg-opacity-10 text-secondary d-flex align-items-center gap-2">
+                                                        <CheckAll size={14}/> Завершено
+                                                    </span>
+                                                ) : booking.status === 'new' ? (
+                                                    <span
+                                                        className="status-badge bg-warning bg-opacity-10 text-warning d-flex align-items-center gap-2">
+                                                        <HourglassSplit size={14}/> Ожидает
+                                                    </span>
+                                                ) : (
+                                                    <span
+                                                        className="status-badge bg-success bg-opacity-10 text-success d-flex align-items-center gap-2">
+                                                        <CheckCircleFill size={14}/> Подтверждено
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="text-muted mb-3 d-flex align-items-center gap-2 small">
+                                                <GeoAlt className={isArchived ? "text-muted" : "text-primary"}/>
+                                                {booking.room_details?.location} • {booking.room_details?.level} этаж
+                                            </p>
+
+                                            <div className="d-flex flex-wrap gap-2 mb-3">
+                                                <div className="info-pill py-1 px-3">
+                                                    <Clock className={isArchived ? "text-muted" : "text-primary"}
+                                                           size={14}/>
+                                                    <span className="small">
+                                                        {formatDate(booking.start_at)}, <strong>{formatTime(booking.start_at)} – {formatTime(booking.end_at)}</strong>
+                                                    </span>
+                                                </div>
+                                                <div className="info-pill py-1 px-3">
+                                                    <People className={isArchived ? "text-muted" : "text-primary"}
+                                                            size={14}/>
+                                                    <span className="small">
+                                                        до <strong>{booking.room_details?.max_capacity} чел.</strong>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {booking.note && (
+                                                <div className="purpose-block py-2 px-3">
+                                                    <div className="fw-semibold text-dark small">{booking.note}</div>
+                                                </div>
                                             )}
                                         </div>
 
-                                        <p className="text-muted mb-3 d-flex align-items-center gap-2 small">
-                                            <GeoAlt className="text-primary"/>
-                                            {booking.room_details?.location} • {booking.room_details?.level} этаж
-                                        </p>
-
-                                        <div className="d-flex flex-wrap gap-2 mb-3">
-                                            <div className="info-pill py-1 px-3">
-                                                <Clock className="text-primary" size={14}/>
-                                                <span className="small">
-                                                    {formatDate(booking.start_at)}, <strong>{formatTime(booking.start_at)} – {formatTime(booking.end_at)}</strong>
-                                                </span>
-                                            </div>
-                                            <div className="info-pill py-1 px-3">
-                                                <People className="text-primary" size={14}/>
-                                                <span
-                                                    className="small">до <strong>{booking.room_details?.max_capacity} чел.</strong></span>
-                                            </div>
+                                        <div className="col-lg-3 text-lg-end">
+                                            {filter === 'active' && (
+                                                <button
+                                                    className="btn-cancel-soft d-flex align-items-center gap-2 ms-lg-auto"
+                                                    onClick={() => openCancelModal(booking.id)}
+                                                >
+                                                    <XCircle/> Отменить бронь
+                                                </button>
+                                            )}
                                         </div>
-
-                                        {booking.note && (
-                                            <div className="purpose-block py-2 px-3">
-                                                <div className="fw-semibold text-dark small">{booking.note}</div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="col-lg-3 text-lg-end">
-                                        {filter === 'active' && (
-                                            <button
-                                                className="btn-cancel-soft d-flex align-items-center gap-2 ms-lg-auto"
-                                                onClick={() => openCancelModal(booking.id)}
-                                            >
-                                                <XCircle/> Отменить бронь
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

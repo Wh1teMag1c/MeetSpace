@@ -20,7 +20,7 @@ const LoginPage = ({onLoginSuccess}) => {
         setLoading(true);
 
         try {
-            const response = await api.post('../auth/jwt/create/', {username, password});
+            const response = await api.post('auth/jwt/create/', {username, password});
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
 

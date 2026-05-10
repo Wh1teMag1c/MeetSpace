@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
-import {BoxArrowRight, GearFill, JournalBookmarkFill, List, PersonCircle} from 'react-bootstrap-icons';
+import {BoxArrowRight, GearFill, JournalBookmarkFill, List, PersonCircle, ShieldLockFill} from 'react-bootstrap-icons';
 
 const Navbar = ({user, onLogout}) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -49,25 +49,57 @@ const Navbar = ({user, onLogout}) => {
                         ) : (
                             <div className="dropdown">
                                 <div
-                                    className="d-flex align-items-center gap-2 p-1 px-3 rounded-pill bg-light border shadow-sm"
+                                    className="d-flex align-items-center gap-2 p-1 px-3 rounded-pill bg-light border shadow-sm transition-all hover-lift"
                                     style={{cursor: 'pointer'}}
                                     onClick={() => setIsOpen(!isOpen)}
                                 >
                                     <div className="text-end d-none d-sm-block">
                                         <div className="fw-bold small">{user.username}</div>
                                     </div>
-                                    <PersonCircle size={28} className="text-primary"/>
+
+                                    {user.avatar ? (
+                                        <img
+                                            src={user.avatar}
+                                            alt="Avatar"
+                                            className="rounded-circle object-fit-cover border border-white shadow-sm"
+                                            style={{width: '32px', height: '32px'}}
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = 'https://via.placeholder.com/32?text=👤';
+                                            }}
+                                        />
+                                    ) : (
+                                        <PersonCircle size={32} className="text-primary"/>
+                                    )}
                                 </div>
 
                                 <ul className={`dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-2 ${isOpen ? 'show' : ''}`}
                                     style={{borderRadius: '16px', minWidth: '220px', position: 'absolute'}}>
+
+                                    {user.is_staff && (
+                                        <>
+                                            <li>
+                                                <Link className="dropdown-item rounded-3 py-2 fw-bold" to="/admin"
+                                                      onClick={() => setIsOpen(false)}
+                                                      style={{color: '#6610f2'}}>
+                                                    <ShieldLockFill className="me-2"/> Админ-панель
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <hr className="dropdown-divider opacity-10"/>
+                                            </li>
+                                        </>
+                                    )}
+
                                     <li>
-                                        <Link className="dropdown-item rounded-3 py-2" to="/my-bookings">
+                                        <Link className="dropdown-item rounded-3 py-2" to="/my-bookings"
+                                              onClick={() => setIsOpen(false)}>
                                             <JournalBookmarkFill className="me-2 text-primary"/> Мои брони
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link className="dropdown-item rounded-3 py-2" to="/settings">
+                                        <Link className="dropdown-item rounded-3 py-2" to="/settings"
+                                              onClick={() => setIsOpen(false)}>
                                             <GearFill className="me-2 text-primary"/> Настройки
                                         </Link>
                                     </li>

@@ -74,7 +74,7 @@ const AboutPage = () => {
                     </div>
                     <div className="col-lg-6">
                         <img
-                            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1000"
+                            src="/about-office.jpg"
                             alt="Modern Office"
                             className="img-fluid rounded-4 shadow-lg"
                         />

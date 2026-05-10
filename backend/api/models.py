@@ -3,12 +3,18 @@ from django.db import models
 
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True, verbose_name="Электронная почта")
     bio = models.TextField(max_length=500, blank=True, verbose_name="О себе")
-    phone = models.CharField(max_length=15, blank=True, verbose_name="Контактный телефон")
+    phone = models.CharField(
+        max_length=15, blank=True, verbose_name="Контактный телефон"
+    )
+    avatar = models.URLField(
+        max_length=500, blank=True, null=True, verbose_name="Ссылка на аватар"
+    )
 
     class Meta:
-        verbose_name = 'Сотрудник'
-        verbose_name_plural = 'Сотрудники'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class MeetingRoom(models.Model):
@@ -19,17 +25,35 @@ class MeetingRoom(models.Model):
     ]
 
     title = models.CharField(max_length=150, verbose_name="Название")
-    room_type = models.CharField(max_length=10, choices=ROOM_TYPES, default='small', verbose_name="Тип")
+    room_type = models.CharField(
+        max_length=10, choices=ROOM_TYPES, default='small', verbose_name="Тип"
+    )
     location = models.CharField(max_length=255, verbose_name="Расположение")
     level = models.IntegerField(default=1, verbose_name="Этаж")
-    max_capacity = models.PositiveIntegerField(verbose_name="Макс. количество мест")
+    max_capacity = models.PositiveIntegerField(
+        verbose_name="Макс. количество мест"
+    )
 
-    has_tv = models.BooleanField(default=False, verbose_name="Наличие ТВ/Экрана")
-    has_whiteboard = models.BooleanField(default=False, verbose_name="Маркерная доска")
-    is_active = models.BooleanField(default=True, verbose_name="Доступна для брони")
+    has_tv = models.BooleanField(
+        default=False, verbose_name="Наличие ТВ/Экрана"
+    )
+    has_whiteboard = models.BooleanField(
+        default=False, verbose_name="Маркерная доска"
+    )
+    has_projector = models.BooleanField(
+        default=False, verbose_name="Наличие проектора"
+    )
+    is_active = models.BooleanField(
+        default=True, verbose_name="Доступна для брони"
+    )
 
-    preview = models.ImageField(upload_to='rooms_previews/', null=True, blank=True, verbose_name="Превью")
-    info = models.TextField(blank=True, verbose_name="Дополнительная информация")
+    preview = models.ImageField(
+        upload_to='rooms_previews/', null=True, blank=True,
+        verbose_name="Превью"
+    )
+    info = models.TextField(
+        blank=True, verbose_name="Дополнительная информация"
+    )
 
     def __str__(self):
         return f"{self.title} (Этаж {self.level})"
@@ -46,12 +70,20 @@ class Reservation(models.Model):
         ('canceled', 'Отменено'),
     ]
 
-    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations', verbose_name="Заказчик")
-    room = models.ForeignKey(MeetingRoom, on_delete=models.CASCADE, related_name='reservations', verbose_name="Комната")
+    client = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reservations',
+        verbose_name="Заказчик"
+    )
+    room = models.ForeignKey(
+        MeetingRoom, on_delete=models.CASCADE, related_name='reservations',
+        verbose_name="Комната"
+    )
     start_at = models.DateTimeField(verbose_name="Время начала")
     end_at = models.DateTimeField(verbose_name="Время окончания")
 
-    status = models.CharField(max_length=10, choices=RES_STATUS, default='new', verbose_name="Статус")
+    status = models.CharField(
+        max_length=10, choices=RES_STATUS, default='new', verbose_name="Статус"
+    )
     note = models.TextField(blank=True, verbose_name="Цель бронирования")
     created_at = models.DateTimeField(auto_now_add=True)
 
