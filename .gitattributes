@@ -1,6 +1,4 @@
-frontend/package-lock.json linguist-generated
-frontend/public/** linguist-vendored
-frontend/src/assets/** linguist-vendored
+frontend/** linguist-vendored
 *.svg linguist-generated
 *.png linguist-generated
 *.jpg linguist-generated
