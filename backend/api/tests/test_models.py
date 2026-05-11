@@ -35,3 +35,22 @@ class ModelTests(TestCase):
             end_at=timezone.now() + timedelta(hours=1)
         )
         self.assertEqual(str(res), f"Бронь {res.id}: Room 1")
+
+    def test_meeting_room_defaults(self):
+        """Проверка дефолтных значений переговорной комнаты."""
+        self.assertTrue(self.room.is_active)
+        self.assertFalse(self.room.has_tv)
+        self.assertFalse(self.room.has_projector)
+        self.assertEqual(self.room.level, 1)
+
+    def test_reservation_cascade_delete_on_user(self):
+        """Проверка удаления брони при удалении пользователя."""
+        Reservation.objects.create(
+            client=self.user,
+            room=self.room,
+            start_at=timezone.now() + timedelta(hours=1),
+            end_at=timezone.now() + timedelta(hours=2)
+        )
+        self.assertEqual(Reservation.objects.count(), 1)
+        self.user.delete()
+        self.assertEqual(Reservation.objects.count(), 0)
