@@ -9,6 +9,8 @@ UserModel = get_user_model()
 
 
 class CustomUserSerializer(BaseUserSerializer):
+    """Сериализатор расширенной модели пользователя для Djoser."""
+
     class Meta(BaseUserSerializer.Meta):
         model = UserModel
         fields = (
@@ -18,18 +20,23 @@ class CustomUserSerializer(BaseUserSerializer):
 
 
 class UserShortSerializer(serializers.ModelSerializer):
+    """Краткий сериализатор пользователя для списков."""
+
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name']
 
 
 class MeetingRoomSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели переговорных комнат."""
+
     class Meta:
         model = MeetingRoom
         fields = '__all__'
 
 
 class ReservationSerializer(serializers.ModelSerializer):
+    """Сериализатор бронирований с валидацией интервалов."""
     room_details = MeetingRoomSerializer(source='room', read_only=True)
     client_info = UserShortSerializer(source='client', read_only=True)
 
@@ -42,6 +49,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         extra_kwargs = {'client': {'read_only': True}}
 
     def validate(self, data):
+        """Проверка временного интервала и отсутствия наложений."""
         start_at = data.get(
             'start_at', getattr(self.instance, 'start_at', None)
         )

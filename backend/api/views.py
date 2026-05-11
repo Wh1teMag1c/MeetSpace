@@ -7,16 +7,19 @@ from .serializers import MeetingRoomSerializer, ReservationSerializer
 
 
 class MeetingRoomViewSet(viewsets.ModelViewSet):
+    """Набор представлений для управления переговорными комнатами."""
     serializer_class = MeetingRoomSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
+        """Возвращает список доступных комнат."""
         if self.request.user and self.request.user.is_staff:
             return MeetingRoom.objects.all()
         return MeetingRoom.objects.filter(is_active=True)
 
     @action(detail=True, methods=['get'])
     def bookings(self, request, pk=None):
+        """Возвращает список броней комнаты на конкретную дату."""
         date_param = request.query_params.get('date')
         if not date_param:
             return Response(
@@ -33,13 +36,16 @@ class MeetingRoomViewSet(viewsets.ModelViewSet):
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
+    """Набор представлений для управления бронированиями."""
     serializer_class = ReservationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        """Назначает текущего пользователя владельцем брони."""
         serializer.save(client=self.request.user)
 
     def get_queryset(self):
+        """Возвращает бронирования текущего пользователя."""
         user = self.request.user
         if user.is_staff:
             return Reservation.objects.all().order_by('-start_at')

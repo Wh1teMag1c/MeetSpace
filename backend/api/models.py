@@ -3,6 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Модель пользователя с дополнительными полями профиля."""
     email = models.EmailField(unique=True, verbose_name="Электронная почта")
     bio = models.TextField(max_length=500, blank=True, verbose_name="О себе")
     phone = models.CharField(
@@ -18,6 +19,7 @@ class User(AbstractUser):
 
 
 class MeetingRoom(models.Model):
+    """Модель переговорной комнаты с описанием оборудования."""
     ROOM_TYPES = [
         ('conf', 'Конференц-зал'),
         ('small', 'Переговорная (малая)'),
@@ -64,6 +66,7 @@ class MeetingRoom(models.Model):
 
 
 class Reservation(models.Model):
+    """Модель бронирования комнаты пользователем на время."""
     RES_STATUS = [
         ('new', 'Новое'),
         ('confirmed', 'Подтверждено'),
