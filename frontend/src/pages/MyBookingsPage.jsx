@@ -32,11 +32,14 @@ const MyBookingsPage = () => {
 
     const fetchMyBookings = async () => {
         try {
+            const userResponse = await api.get('auth/users/me/');
+            const currentUserId = userResponse.data.id;
             const response = await api.get('reservations/');
-            const sorted = response.data.sort((a, b) => new Date(b.start_at) - new Date(a.start_at));
+            const myBookings = response.data.filter(b => b.client === currentUserId);
+            const sorted = myBookings.sort((a, b) => new Date(b.start_at) - new Date(a.start_at));
             setBookings(sorted);
         } catch (err) {
-            console.error('Ошибка при загрузке бронирований');
+            console.error('Ошибка при загрузке бронирований', err);
         } finally {
             setLoading(false);
         }
