@@ -130,6 +130,21 @@ const BookingModal = ({room, show, onClose, onBookingSuccess}) => {
         });
     }, [selStart, selEnd, busySlots, getMinAllowedMins]);
 
+    const handleStartTimeSelect = (val) => {
+        const newMins = timeToMins(val);
+        setSelStart(newMins);
+        if (newMins >= selEnd) {
+            setSelEnd(Math.min(newMins + 30, TOTAL_MINUTES));
+        }
+    };
+
+    const handleEndTimeSelect = (val) => {
+        const newMins = timeToMins(val);
+        if (newMins > selStart) {
+            setSelEnd(newMins);
+        }
+    };
+
     const handleSliderMouseDown = (e, type) => {
         e.stopPropagation();
         setDragState(type);
@@ -417,7 +432,7 @@ const BookingModal = ({room, show, onClose, onBookingSuccess}) => {
                                         <label className="form-label small fw-bold text-muted">Начало</label>
                                         <select className="form-select custom-input bg-white border-0 shadow-sm"
                                                 value={minsToTime(selStart)}
-                                                onChange={e => setStartTime(e.target.value)}>
+                                                onChange={e => handleStartTimeSelect(e.target.value)}>
                                             {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                                         </select>
                                     </div>
@@ -425,10 +440,10 @@ const BookingModal = ({room, show, onClose, onBookingSuccess}) => {
                                         <label className="form-label small fw-bold text-muted">Конец</label>
                                         <select className="form-select custom-input bg-white border-0 shadow-sm"
                                                 value={minsToTime(selEnd)}
-                                                onChange={e => setEndTime(e.target.value)}>
+                                                onChange={e => handleEndTimeSelect(e.target.value)}>
                                             {TIME_SLOTS.map(t => (
                                                 <option key={t} value={t}
-                                                        disabled={timeToMins(t) <= timeToMins(minsToTime(selStart))}>
+                                                        disabled={timeToMins(t) <= selStart}>
                                                     {t}
                                                 </option>
                                             ))}
